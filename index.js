@@ -11,7 +11,7 @@ const port = process.env.PORT || 4000
 
 app.use(express.json())
 app.use(cors({
-    "origin":"chatgpt-frontend-qxxl.vercel.app",
+    "origin":"https://chatgpt-frontend-eta.vercel.app",
     credentials:true
 }))
 app.use(cookieParser())
