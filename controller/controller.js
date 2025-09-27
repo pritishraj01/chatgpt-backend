@@ -8,8 +8,8 @@ export const signup = async (req, res) => {
     try {
         const { name, email, password } = req.body
         let profileImg;
-        if(req.file){
-            profileImg=await uploadOnCloudinary(req.file.path)
+        if (req.file) {
+            profileImg = await uploadOnCloudinary(req.file.path)
         }
         let existUser = await User.findOne({ email })
         if (existUser) {
@@ -23,13 +23,13 @@ export const signup = async (req, res) => {
             email,
             password: hashpass,
             profileImg
-        })  
+        })
 
         let token = generateToken(user._id)
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV == "production",
-            sameSite: "strict",
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
@@ -37,7 +37,7 @@ export const signup = async (req, res) => {
             user: {
                 name,
                 email,
-                profileImg 
+                profileImg
             }
         })
     } catch (error) {
@@ -60,7 +60,7 @@ export const login = async (req, res) => {
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV == "production",
-            sameSite: "strict",
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
         return res.status(200).json({ user: { email } })
@@ -71,37 +71,41 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
-        res.clearCookie("token")
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none"
+        })
         res.status(200).send("Logout successfully")
     } catch (error) {
         console.log(`error: ${error}`);
     }
 }
 
-export const getUserData=async(req,res)=>{
+export const getUserData = async (req, res) => {
     try {
-        let userId=req.userId
-        if(!userId){
-            return res.status(400).json({message:"User not found"})
+        let userId = req.userId
+        if (!userId) {
+            return res.status(400).json({ message: "User not found" })
         }
-        let user=await User.findById(userId)
-        if(!user){
-            return res.status(400).json({message:"User not found"})
+        let user = await User.findById(userId)
+        if (!user) {
+            return res.status(400).json({ message: "User not found" })
         }
         return res.status(200).json(user)
     } catch (error) {
-        return res.status(400).json({message:error})
+        return res.status(400).json({ message: error })
     }
 }
 
-export const aiAnswer= async(req,res)=>{
-    const{prompt}= req.body
-    if(!prompt){
+export const aiAnswer = async (req, res) => {
+    const { prompt } = req.body
+    if (!prompt) {
         return res.status(400).json("prompt is empty")
     }
     try {
-        const text= await main(prompt)
-        res.json({text})
+        const text = await main(prompt)
+        res.json({ text })
     } catch (error) {
         res.status(500).json({ error: "Failed to generate content" });
     }
